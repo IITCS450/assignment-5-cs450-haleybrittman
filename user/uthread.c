@@ -42,6 +42,21 @@ static void enqueue_thread(thread_t *thread) {
     thread->next = NULL;
 }
 
+// Helper function to dequeue a thread
+static thread_t *dequeue_thread() {
+    if (!ready_queue.head) {
+        return NULL;
+    }
+
+    thread_t *thread = ready_queue.head;
+    ready_queue.head = thread->next;
+    if (!ready_queue.head) {
+        ready_queue.tail = NULL;
+    }
+
+    return thread;
+}
+
 tid_t thread_create(void (*fn)(void*), void *arg) {
     thread_t *new_thread = malloc(sizeof(thread_t));
     if (!new_thread) {
@@ -70,5 +85,19 @@ tid_t thread_create(void (*fn)(void*), void *arg) {
     return new_thread->tid;
 }
 
-void thread_yield(void){}
+void thread_yield(void) {
+    if (current_thread) {
+        enqueue_thread(current_thread);
+    }
+
+    thread_t *next_thread = dequeue_thread();
+    if (next_thread) {
+        thread_t *prev_thread = current_thread;
+        current_thread = next_thread;
+
+        
+        switch_context(&prev_thread->stack, &current_thread->stack);
+    }
+}
+
 int thread_join(tid_t tid){ (void)tid; return -1; }
