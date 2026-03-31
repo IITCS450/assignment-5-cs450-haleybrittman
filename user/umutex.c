@@ -13,4 +13,6 @@ void mutex_lock(umutex_t *m) {
         thread_yield();
     }
 }
-void mutex_unlock(umutex_t *m){ m->locked = 0; }
+void mutex_unlock(umutex_t *m) {
+    __sync_lock_release(&m->locked); // Release the lock atomically
+}
