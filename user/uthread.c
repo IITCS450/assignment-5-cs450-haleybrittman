@@ -57,7 +57,8 @@ static thread_t *dequeue_thread() {
     return thread;
 }
 
-// Helper function to find a thread by tid
+
+//  function to find a thread by its tid
 static thread_t *find_thread(tid_t tid) {
     thread_t *current = ready_queue.head;
     while (current) {
@@ -115,11 +116,11 @@ void thread_yield(void) {
 int thread_join(tid_t tid) {
     thread_t *target_thread = find_thread(tid);
     if (!target_thread) {
-        return -1; // Thread not found
+        return -1; 
     }
 
     while (target_thread) {
-        thread_yield(); // Yield until the target thread finishes
+        thread_yield(); 
         target_thread = find_thread(tid);
     }
 
