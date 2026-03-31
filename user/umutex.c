@@ -7,5 +7,10 @@
 void mutex_init(umutex_t *m) {
     m->locked = 0; 
 }
-void mutex_lock(umutex_t *m){ while(m->locked){ thread_yield(); } m->locked = 1; }
+void mutex_lock(umutex_t *m) {
+    while (__sync_lock_test_and_set(&m->locked, 1)) {
+        // Busy-wait and yield to other threads
+        thread_yield();
+    }
+}
 void mutex_unlock(umutex_t *m){ m->locked = 0; }
