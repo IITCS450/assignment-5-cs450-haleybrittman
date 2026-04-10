@@ -14,5 +14,5 @@ void mutex_lock(umutex_t *m) {
     }
 }
 void mutex_unlock(umutex_t *m) {
-    __sync_lock_release(&m->locked); // Release the lock atomically
+    __sync_lock_release(&m->locked);
 }
