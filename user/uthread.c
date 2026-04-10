@@ -7,7 +7,6 @@
 
 static tid_t next_tid = 0;
 
-// User-mode context layout (matches xv6 kernel struct context)
 struct context {
   uint edi;
   uint esi;
@@ -18,23 +17,20 @@ struct context {
 
 extern void switch_context(struct context **old, struct context *new);
 
-/* minimal NULL definition for no-host-include builds */
 #ifndef NULL
 #define NULL ((void*)0)
 #endif
-
-/* forward declaration of thread entry stub */
 static void thread_stub(void);
 
 typedef struct thread {
     tid_t tid;
-    void *stack_raw;           // pointer returned by malloc (for free)
-    struct context *context;   // pointer to context on thread stack
+    void *stack_raw;
+    struct context *context;
     void (*fn)(void*);
     void *arg;
     int finished;
-    struct thread *next;       // ready-queue link
-    struct thread *all_next;   // all-threads list link
+    struct thread *next;
+    struct thread *all_next;
 } thread_t;
 
 typedef struct thread_queue {
@@ -46,7 +42,7 @@ typedef struct thread_queue {
 static thread_queue_t ready_queue;
 static thread_t *current_thread;
 static thread_t *all_threads_head;
-static struct context *main_ctx; // saved main context pointer
+static struct context *main_ctx;
 
 void thread_init(void) {
     ready_queue.head = NULL;
@@ -66,7 +62,7 @@ static void enqueue_thread(thread_t *thread) {
     thread->next = NULL;
 }
 
-// Helper function to dequeue a thread
+
 static thread_t *dequeue_thread() {
     if (!ready_queue.head) {
         return NULL;
@@ -82,7 +78,7 @@ static thread_t *dequeue_thread() {
 }
 
 
-//  function to find a thread by its tid
+
 static thread_t *find_thread(tid_t tid) {
     thread_t *t = all_threads_head;
     while (t) {
@@ -108,15 +104,15 @@ tid_t thread_create(void (*fn)(void*), void *arg) {
         return -1;
     }
 
-    // prepare context at top of stack
+    
     memset(new_thread->stack_raw, 0, STACK_SIZE);
     void *stack_top = (char*)new_thread->stack_raw + STACK_SIZE;
     struct context *ctx = (struct context *)((char*)stack_top - sizeof(struct context));
     memset(ctx, 0, sizeof(*ctx));
-    ctx->eip = (uint)thread_stub; // entry point for thread
+    ctx->eip = (uint)thread_stub; 
     new_thread->context = ctx;
 
-    // add to global list of threads
+  
     new_thread->all_next = all_threads_head;
     all_threads_head = new_thread;
 
@@ -127,7 +123,7 @@ tid_t thread_create(void (*fn)(void*), void *arg) {
 
 void thread_yield(void) {
     if (!current_thread) {
-        // running in main
+        
         thread_t *next = dequeue_thread();
         if (!next) return;
         current_thread = next;
@@ -135,7 +131,7 @@ void thread_yield(void) {
         return;
     }
 
-    // running in a thread
+
     thread_t *next = dequeue_thread();
     if (!next) return;
     thread_t *prev = current_thread;
@@ -154,17 +150,18 @@ int thread_join(tid_t tid) {
     return 0;
 }
 
-// Thread entry wrapper
+
 static void thread_stub(void) {
     if (!current_thread) {
-        // shouldn't happen
+        
         return;
     }
     current_thread->fn(current_thread->arg);
     current_thread->finished = 1;
-    // switch back to main (scheduler)
+
+
     thread_t *t = current_thread;
     current_thread = NULL;
     switch_context(&t->context, main_ctx);
-    // never returns
+  
 }

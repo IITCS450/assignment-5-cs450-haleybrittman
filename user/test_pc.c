@@ -23,7 +23,6 @@ static void producer(void *arg){
   static void producer(void *arg){
     int id = (int)arg;
     for(int i=0;i<100;i++){
-      // wait until there is space in the buffer
       mutex_lock(&mu);
       while(count >= N){
         mutex_unlock(&mu);
@@ -42,7 +41,6 @@ static void producer(void *arg){
     (void)arg;
     int got = 0;
     while(got < 200){
-      // wait until there is something in the buffer
       mutex_lock(&mu);
       while(count <= 0){
         mutex_unlock(&mu);
