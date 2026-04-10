@@ -2,8 +2,6 @@
 #include "stat.h"
 #include "user.h"
 #include "uthread.h"
-#include <stdlib.h>
-#include <string.h>
 
 #define STACK_SIZE 4096
 
@@ -19,6 +17,14 @@ struct context {
 };
 
 extern void switch_context(struct context **old, struct context *new);
+
+/* minimal NULL definition for no-host-include builds */
+#ifndef NULL
+#define NULL ((void*)0)
+#endif
+
+/* forward declaration of thread entry stub */
+static void thread_stub(void);
 
 typedef struct thread {
     tid_t tid;
@@ -87,11 +93,11 @@ static thread_t *find_thread(tid_t tid) {
 }
 
 tid_t thread_create(void (*fn)(void*), void *arg) {
-    static void thread_stub(void); /* forward decl for context setup */
     thread_t *new_thread = malloc(sizeof(thread_t));
     if (!new_thread) {
         return -1; 
     }
+
     new_thread->tid = next_tid++;
     new_thread->fn = fn;
     new_thread->arg = arg;
